@@ -13,4 +13,6 @@ SPIDER_MODULES = ['seccion.spiders']
 NEWSPIDER_MODULE = 'seccion.spiders'
 DEFAULT_ITEM_CLASS = 'seccion.items.RestauranteItem'
 USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
+ITEM_PIPELINES = ['scrapy.contrib.pipeline.images.ImagesPipeline']
+IMAGES_STORE = 'images'
 
