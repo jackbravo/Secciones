@@ -15,14 +15,14 @@ class RestaurantesSpider(BaseSpider):
         hxs = HtmlXPathSelector(response)
         for result in hxs.select('//div[@id="marco"]'):
             item = RestauranteItem()
-            item['name'] = result.select('.//a[@class="anclas"]/text()').extract()
-            item['full_url'] = result.select('.//a[@class="anclas"]/@href').extract()
-            item['category'] = result.select('.//td[@class="categoria"]/a/text()').extract()
-            item['address'] = result.select('.//tr[3]//strong/text()').extract()
-            item['phone'] = result.select('.//span[@class="tellist"]/text()').extract()
+            item['name'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/text()').extract())
+            item['full_url'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/@href').extract())
+            item['category'] = self.pop_or_nil(result.select('.//td[@class="categoria"]/a/text()').extract())
+            item['address'] = self.pop_or_nil(result.select('.//tr[3]//strong/text()').extract())
+            item['phone'] = self.pop_or_nil(result.select('.//span[@class="tellist"]/text()').extract())
             star_url = 'http://images.seccionamarilla.com.mx/rating/estrella.gif'
             item['rating'] = len(result.select('.//img[@src="' + star_url + '"]'))
-            item['num_reviews'] = result.select('.//div[@id="rating"]//font//text()').re('(\d+)')
+            item['num_reviews'] = self.pop_or_nil(result.select('.//div[@id="rating"]//font//text()').re('(\d+)'))
             if (result.select('.//div[@id="contlist_lpt"]').extract()):
                 item['result_type'] = 'sponsored'
             elif (result.select('.//div[@class="td_lista_result_Diamante"]').extract()):
@@ -39,3 +39,9 @@ class RestaurantesSpider(BaseSpider):
 
         #for link in hxs.select('//a[@class="link_paginadoNext"]/@href').extract()
             #yield Request(link, callback=self.parse)
+
+    def pop_or_nil(self, lst):
+        if (len(lst) > 0):
+            return lst.pop()
+        else:
+            return 0
