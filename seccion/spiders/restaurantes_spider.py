@@ -5,7 +5,7 @@ from seccion.items import RestauranteItem
 
 class RestaurantesSpider(BaseSpider):
     name = "restaurantes"
-    allowed_domains = ["seccionamarilla.com"]
+    allowed_domains = ["seccionamarilla.com.mx"]
     start_urls = [
         "http://www.seccionamarilla.com.mx/Resultados/restaurantes/jalisco/guadalajara/1"
     ]
@@ -34,11 +34,11 @@ class RestaurantesSpider(BaseSpider):
             item['position'] = self.position
             yield item
 
-        #for link in hxs.select('//a[@class="link_paginadoNew"]/@href').extract()
-            #yield Request(link, callback=self.parse)
+        for link in hxs.select('//a[@class="link_paginadoNew"]/@href').extract():
+            yield Request(link, callback=self.parse)
 
-        #for link in hxs.select('//a[@class="link_paginadoNext"]/@href').extract()
-            #yield Request(link, callback=self.parse)
+        for link in hxs.select('//a[@class="link_paginadoNext"]/@href').extract():
+            yield Request(link, callback=self.parse)
 
     def pop_or_nil(self, lst):
         if (len(lst) > 0):
