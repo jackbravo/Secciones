@@ -21,6 +21,7 @@ class RestaurantesSpider(BaseSpider):
             item['full_url'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/@href').extract())
             item['category'] = self.pop_or_nil(result.select('.//td[@class="categoria"]/a/text()').extract())
             item['address'] = self.pop_or_nil(result.select('.//tr[3]//strong/text()').extract())
+            self.fill_address(item, item['address'])
             item['phone'] = self.pop_or_nil(result.select('.//span[@class="tellist"]/text()').extract())
             star_url = 'http://images.seccionamarilla.com.mx/rating/estrella.gif'
             item['rating'] = len(result.select('.//img[@src="' + star_url + '"]'))
@@ -47,3 +48,15 @@ class RestaurantesSpider(BaseSpider):
             return lst[0]
         else:
             return 0
+
+    def fill_address(self, item, address):
+        if (address != 0):
+            address = [x.strip() for x in address.split("\r\n")]
+            item['street'] = address[0]
+            item['colony'] = '' if (len(address) < 2) else address[2]
+            item['zipcode'] = '' if (len(address) < 4) else address[4]
+            item['city'] = '' if (len(address) < 6) else address[6]
+            if (item['city'] == u'JAL'):
+                item['state'] = u'JAL'
+                item['city'] = ''
+            item['state'] = '' if (len(address) < 8) else address[8]
