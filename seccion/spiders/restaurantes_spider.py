@@ -16,6 +16,8 @@ class RestaurantesSpider(BaseSpider):
         for result in hxs.select('//div[@id="marco"]'):
             item = RestauranteItem()
             item['name'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/text()').extract())
+            if (not item['name']):
+                item['name'] = self.pop_or_nil(result.select('.//td[1]/text()').extract())
             item['full_url'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/@href').extract())
             item['category'] = self.pop_or_nil(result.select('.//td[@class="categoria"]/a/text()').extract())
             item['address'] = self.pop_or_nil(result.select('.//tr[3]//strong/text()').extract())
@@ -42,6 +44,6 @@ class RestaurantesSpider(BaseSpider):
 
     def pop_or_nil(self, lst):
         if (len(lst) > 0):
-            return lst.pop()
+            return lst[0]
         else:
             return 0
