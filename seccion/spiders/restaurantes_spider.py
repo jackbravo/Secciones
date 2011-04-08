@@ -32,7 +32,7 @@ class RestaurantesSpider(BaseSpider):
                 item['result_type'] = 'diamante'
             else:
                 item['result_type'] = 'normal'
-            item['image_urls'] = result.select('.//div[@class="llg"]//img/@src').extract()
+            item['image_urls'] = self.pop_or_nil(result.select('.//div[@class="llg"]//img/@src').extract())
             self.position += 1
             item['position'] = self.position
             yield item
