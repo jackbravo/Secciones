@@ -1,5 +1,7 @@
-// correr el crawler para restaurantes
-scrapy crawl restaurantes --set FEED_URI=data.csv --set FEED_FORMAT=csv
+- correr el crawler para restaurantes
 
-// correr el shell de scrapy en una dirección
-scrapy shell http://www.seccionamarilla.com.mx/Resultados/restaurantes/jalisco/guadalajara/1
+    scrapy crawl restaurantes --set FEED_URI=data.csv --set FEED_FORMAT=csv
+
+- correr el shell de scrapy en una dirección
+
+    scrapy shell http://www.seccionamarilla.com.mx/Resultados/restaurantes/jalisco/guadalajara/1
