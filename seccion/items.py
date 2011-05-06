@@ -23,4 +23,6 @@ class RestauranteItem(Item):
     result_type = Field() # contlist, result_Diamante, result
     image_urls = Field()
     images = Field()
+    email = Field()
+    homepage = Field()
     pass

@@ -15,10 +15,10 @@ class RestaurantesSpider(BaseSpider):
         hxs = HtmlXPathSelector(response)
         for result in hxs.select('//div[@id="marco"]'):
             item = RestauranteItem()
+            item['full_url'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/@href').extract())
             item['name'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/text()').extract())
             if (not item['name']):
                 item['name'] = self.pop_or_nil(result.select('.//td[1]/text()').extract())
-            item['full_url'] = self.pop_or_nil(result.select('.//a[@class="anclas"]/@href').extract())
             item['category'] = self.pop_or_nil(result.select('.//td[@class="categoria"]/a/text()').extract())
             item['address'] = self.pop_or_nil(result.select('.//tr[3]//strong/text()').extract())
             self.fill_address(item, item['address'])
@@ -35,13 +35,27 @@ class RestaurantesSpider(BaseSpider):
             item['image_urls'] = self.pop_or_nil(result.select('.//div[@class="llg"]//img/@src').extract())
             self.position += 1
             item['position'] = self.position
-            yield item
+            if (item['full_url']):
+                yield Request(item['full_url'], callback=lambda r: self.parse_restaurant(r, item))
+            else:
+                yield item
 
         for link in hxs.select('//a[@class="link_paginadoNew"]/@href').extract():
             yield Request(link, callback=self.parse)
 
         for link in hxs.select('//a[@class="link_paginadoNext"]/@href').extract():
             yield Request(link, callback=self.parse)
+
+    def parse_restaurant(self, response, item):
+        hxs = HtmlXPathSelector(response)
+        item['email'] = self.pop_or_nil(hxs.select('//a[@id="acorreo"]/@href').extract())
+        item['email'] = item['email'].replace('mailto:', '')
+        for result in hxs.select('//div[@class="iconoProductoVentana"]//a[@target="_blank"]'):
+            if (result.select('./strong/text()').extract()[0].find("Web") != -1):
+                item['homepage'] = self.pop_or_nil(result.select('./@href').extract())
+        # TODO: extract horarios strong/text() casi te da el resultado nomas quitar "Horarios:" y "Formas de pago"
+        for result in hxs.select('//div[@class="recuadroFormasPago"]//table//img/@src').extract():
+            # TODO extract name of the image minus the extension
 
     def pop_or_nil(self, lst):
         if (len(lst) > 0):
