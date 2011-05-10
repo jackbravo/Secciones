@@ -38,7 +38,9 @@ class RestaurantesSpider(BaseSpider):
             self.position += 1
             item['position'] = self.position
             if (item['full_url']):
-                yield Request(item['full_url'], callback=lambda r: self.parse_restaurant(r, item))
+                request = Request(item['full_url'], callback=self.parse_restaurant)
+                request.meta['item'] = item
+                yield request
             else:
                 yield item
 
@@ -48,15 +50,18 @@ class RestaurantesSpider(BaseSpider):
         for link in hxs.select('//a[@class="link_paginadoNext"]/@href').extract():
             yield Request(link, callback=self.parse)
 
-    def parse_restaurant(self, response, item):
+    def parse_restaurant(self, response):
         hxs = HtmlXPathSelector(response)
-        item['email'] = self.pop_or_nil(hxs.select('//a[@id="acorreo"]/@href').extract())
-        if item['email']:
-            item['email'] = item['email'].replace('mailto:', '')
-        for result in hxs.select('//div[@class="iconoProductoVentana"]//a[@target="_blank"]'):
-            if (result.select('./strong/text()').extract()[0].find("Web") != -1):
-                item['homepage'] = self.pop_or_nil(result.select('./@href').extract())
-        # TODO: extract horarios strong/text() casi te da el resultado nomas quitar "Horarios:" y "Formas de pago"
+        item = response.request.meta['item']
+
+        for result in hxs.select('//span[@class="infoDireccionVentana"]/text()').extract():
+            if ': ' in result.strip():
+                values = result.strip().split(': ')
+                if 'CORREO' in values[0]:
+                    item['email'] = values[1]
+                if 'GINA WEB' in values[0]:
+                    item['homepage'] = values[1]
+
         item['horario'] = ''
         for result in hxs.select('//div[@id="textpwv"]//text()').extract():
             if len(result.strip()) == 0:
