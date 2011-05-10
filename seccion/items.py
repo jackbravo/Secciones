@@ -25,4 +25,9 @@ class RestauranteItem(Item):
     images = Field()
     email = Field()
     homepage = Field()
+    horario = Field()
+    formas_de_pago = Field()
+    servicios = Field()
+    marcas = Field()
+    informacion = Field()
     pass

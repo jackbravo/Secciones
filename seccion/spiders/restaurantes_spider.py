@@ -1,3 +1,5 @@
+import re
+import os
 from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 from scrapy.http import Request
@@ -49,19 +51,50 @@ class RestaurantesSpider(BaseSpider):
     def parse_restaurant(self, response, item):
         hxs = HtmlXPathSelector(response)
         item['email'] = self.pop_or_nil(hxs.select('//a[@id="acorreo"]/@href').extract())
-        item['email'] = item['email'].replace('mailto:', '')
+        if item['email']:
+            item['email'] = item['email'].replace('mailto:', '')
         for result in hxs.select('//div[@class="iconoProductoVentana"]//a[@target="_blank"]'):
             if (result.select('./strong/text()').extract()[0].find("Web") != -1):
                 item['homepage'] = self.pop_or_nil(result.select('./@href').extract())
         # TODO: extract horarios strong/text() casi te da el resultado nomas quitar "Horarios:" y "Formas de pago"
+        item['horario'] = ''
+        for result in hxs.select('//div[@id="textpwv"]//text()').extract():
+            if len(result.strip()) == 0:
+                continue
+            if "Horario" in result.strip():
+                continue
+            if "Formas de pago" in result.strip():
+                continue
+
+            if len(item['horario']):
+                if re.search('\w', item['horario'][-1]):
+                    item['horario'] += " "
+                else:
+                    item['horario'] += "\n"
+
+            item['horario'] += result.strip()
+
+        item['formas_de_pago'] = []
         for result in hxs.select('//div[@class="recuadroFormasPago"]//table//img/@src').extract():
-            # TODO extract name of the image minus the extension
+            item['formas_de_pago'].append( os.path.split(result)[1].split('.')[0] )
+        item['formas_de_pago'] = ", ".join( item['formas_de_pago'] )
+
+        for result in hxs.select('//h4[@class="categoria"]'):
+            cat, content = result.select('.//text()').extract()
+            if 'SERVICIOS' in cat:
+                item['servicios'] = content
+            elif 'MARCAS' in cat:
+                item['marcas'] = content
+            elif 'INFORMACION' in cat:
+                item['informacion'] = content
+
+        yield item
 
     def pop_or_nil(self, lst):
         if (len(lst) > 0):
             return lst[0]
         else:
-            return 0
+            return ''
 
     def fill_address(self, item, address):
         if (address != 0):
