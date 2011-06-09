@@ -5,3 +5,8 @@
 - correr el shell de scrapy en una dirección
 
     scrapy shell http://www.seccionamarilla.com.mx/Resultados/restaurantes/jalisco/guadalajara/1
+
+- correr el script para agregar taxonomias de ZT
+
+    python scripts/transform.py <infile> <outfile>
+    python scripts/transform.py data.2011.05.10.csv data.2011.06.09.csv
